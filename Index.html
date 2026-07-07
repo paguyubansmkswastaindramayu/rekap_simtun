@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Sekolah</title>
+  <style>
+    /* CSS Dasar */
+    body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f6f9; }
+    .hidden { display: none !important; }
+    
+    /* Login Screen */
+    #login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+    .login-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+    .login-card img { max-width: 100px; margin-bottom: 15px; }
+    .input-group { position: relative; margin-bottom: 15px; }
+    .input-group input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    .eye-icon { position: absolute; right: 10px; top: 10px; cursor: pointer; }
+    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #info-text { margin-top: 15px; font-size: 12px; color: #666; }
+    #version-text { font-size: 10px; color: #999; }
+
+    /* Layout Utama & Sidebar */
+    #main-app { display: flex; height: 100vh; }
+    #sidebar { width: 250px; background: #343a40; color: white; transition: 0.3s; padding-top: 20px; }
+    #sidebar.collapsed { width: 0; overflow: hidden; }
+    #sidebar ul { list-style: none; padding: 0; }
+    #sidebar li { padding: 15px 20px; cursor: pointer; border-bottom: 1px solid #4b545c; }
+    #sidebar li:hover { background: #4b545c; }
+    
+    #content-area { flex-grow: 1; display: flex; flex-direction: column; }
+    #header { background: white; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; }
+    .menu-toggle { font-size: 24px; cursor: pointer; margin-right: 20px; }
+    
+    #main-content { padding: 20px; overflow-y: auto; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    table, th, td { border: 1px solid #ddd; }
+    th, td { padding: 10px; text-align: left; }
+    th { background: #f8f9fa; }
+  </style>
+</head>
+<body>
+
+  <div id="login-screen">
+    <div class="login-card">
+      <img id="app-logo" src="" alt="Logo">
+      <h2 id="app-title1" style="margin: 0; font-size: 18px;">Memuat...</h2>
+      <h3 id="app-title2" style="margin: 5px 0 20px 0; font-size: 14px; color: #555;"></h3>
+      
+      <div class="input-group">
+        <input type="text" id="username" placeholder="Username (NPSN)">
+      </div>
+      <div class="input-group">
+        <input type="password" id="password" placeholder="Password">
+        <span class="eye-icon" onclick="togglePassword()">👁️</span>
+      </div>
+      <button onclick="prosesLogin()">Masuk</button>
+      <p id="info-text"></p>
+      <p id="version-text"></p>
+    </div>
+  </div>
+
+  <div id="main-app" class="hidden">
+    <div id="sidebar">
+      <ul>
+        <li onclick="pindahMenu('dashboard')">Dashboard</li>
+        <li onclick="pindahMenu('data-sekolah')">Data Sekolah</li>
+        <li onclick="pindahMenu('data-ajuan')">Data Ajuan</li>
+        <li onclick="pindahMenu('rekap-ajuan')">Rekap Ajuan</li>
+        <li onclick="logout()" style="color: #ff4d4d;">Keluar</li>
+      </ul>
+    </div>
+    
+    <div id="content-area">
+      <div id="header">
+        <span class="menu-toggle" onclick="toggleSidebar()">☰</span>
+        <h3 style="margin: 0;">Sistem Informasi Sekolah</h3>
+      </div>
+      
+      <div id="main-content">
+        <div id="view-dashboard" class="card">Memuat data Dashboard...</div>
+        <div id="view-data-sekolah" class="card hidden">Memuat Form Data Sekolah...</div>
+        <div id="view-data-ajuan" class="card hidden"><h2>Data Ajuan</h2><p>Halaman ini sedang dalam pengembangan.</p></div>
+        <div id="view-rekap-ajuan" class="card hidden"><h2>Rekap Ajuan</h2><p>Halaman ini sedang dalam pengembangan.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // MASUKKAN URL WEB APP ANDA DI SINI
+    const API_URL = "https://script.google.com/macros/s/AKfycbwjXQwwEF2svGZd8LFYYdgVhN1Z5_I5mTAYyq5lkscXe2cZxW8kL95-G2QECqfFGrXF/exec"; 
+    
+    let currentUser = "";
+
+    // 1. Ambil Data Profil saat halaman dimuat
+    window.onload = function() {
+      fetch(API_URL + "?action=getProfile")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('app-logo').src = data.logo;
+          document.getElementById('app-title1').innerText = data.title1;
+          document.getElementById('app-title2').innerText = data.title2;
+          document.getElementById('info-text').innerText = data.info;
+          document.getElementById('version-text').innerText = "Versi " + data.version;
+        }).catch(err => console.log("Gagal memuat profil"));
+    }
+
+    // 2. Fitur Mata Password
+    function togglePassword() {
+      const pass = document.getElementById('password');
+      pass.type = pass.type === 'password' ? 'text' : 'password';
+    }
+
+    // 3. Login dengan Press Enter
+    document.getElementById('password').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') prosesLogin();
+    });
+
+    // 4. Proses Login
+    function prosesLogin() {
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+      
+      // Kirim POST sebagai text plain untuk menghindari masalah CORS preflight dari GitHub
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' }, 
+        body: JSON.stringify({ action: 'login', username: user, password: pass })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.success) {
+          currentUser = data.username;
+          document.getElementById('login-screen').classList.add('hidden');
+          document.getElementById('main-app').classList.remove('hidden');
+          loadDataSekolah(); // Ambil data setelah sukses
+        } else {
+          alert(data.message);
+        }
+      });
+    }
+
+    // 5. Toggle Sidebar
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    // 6. Navigasi Menu
+    function pindahMenu(menuId) {
+      document.querySelectorAll('#main-content .card').forEach(el => el.classList.add('hidden'));
+      document.getElementById('view-' + menuId).classList.remove('hidden');
+    }
+
+    // 7. Ambil Data Master Sekolah
+    function loadDataSekolah() {
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'getSekolah', username: currentUser })
+      })
+      .then(res => res.json())
+      .then(res => {
+        if(res.success) {
+          const d = res.data;
+          // Render ke Dashboard (Hanya Baca)
+          document.getElementById('view-dashboard').innerHTML = `
+            <h2>Dashboard</h2>
+            <table>
+              <tr><th>NPSN</th><td>${d[1]}</td><th>Nama Sekolah</th><td>${d[2]}</td></tr>
+              <tr><th>Jenjang</th><td>${d[3]}</td><th>Status</th><td>${d[4]}</td></tr>
+              <tr><th>Kepala Sekolah</th><td>${d[7]}</td><th>Alamat</th><td>${d[9]}</td></tr>
+            </table>
+          `;
+          
+          // Render ke Data Sekolah (Bisa diedit - Konsep Awal)
+          document.getElementById('view-data-sekolah').innerHTML = `
+            <h2>Data Sekolah</h2>
+            <p>Fitur Edit sedang disiapkan. Menampilkan data Anda:</p>
+            <input type="text" value="${d[2]}" placeholder="Nama Sekolah" disabled style="padding:10px; width:100%; margin-bottom:10px;">
+            <input type="text" value="${d[9]}" placeholder="Alamat" disabled style="padding:10px; width:100%; margin-bottom:10px;">
+            <button disabled>Simpan Perubahan (Segera Hadir)</button>
+          `;
+        }
+      });
+    }
+
+    function logout() {
+      location.reload(); // Sederhana: refresh halaman untuk mereset state
+    }
+  </script>
+</body>
+</html>

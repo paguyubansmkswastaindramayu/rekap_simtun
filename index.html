@@ -30,14 +30,22 @@
   </style>
 </head>
 <body>
+  <!-- Banner pemberitahuan jika iframe gagal dimuat -->
+  <div style="background: #fff3cd; color: #856404; padding: 10px; text-align: center; font-family: sans-serif; font-size: 14px;">
+    Aplikasi tidak muncul? 
+    <a href="https://script.google.com/macros/s/AKfycbwjXQwwEF2svGZd8LFYYdgVhN1Z5_I5mTAYyq5lkscXe2cZxW8kL95-G2QECqfFGrXF/exec" 
+       target="_blank" 
+       style="font-weight: bold; color: #533f03; text-decoration: underline;">
+       Klik di sini untuk membuka langsung di Tab Baru
+    </a>
+  </div>
+
   <div class="iframe-container">
     <iframe
       id="app"
       src="https://script.google.com/macros/s/AKfycbwjXQwwEF2svGZd8LFYYdgVhN1Z5_I5mTAYyq5lkscXe2cZxW8kL95-G2QECqfFGrXF/exec"
       scrolling="yes"
       allowfullscreen="true"
-      webkitallowfullscreen="true"
-      mozallowfullscreen="true"
       allow="fullscreen; camera; microphone; display-capture; geolocation;">
     </iframe>
   </div>
